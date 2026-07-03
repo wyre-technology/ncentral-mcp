@@ -1,0 +1,60 @@
+{
+  "name": "ncentral-mcp",
+  "version": "0.0.0",
+  "description": "MCP server for N-able N-central — org units, devices, monitoring, scheduled tasks, custom properties, maintenance windows, access groups",
+  "type": "module",
+  "main": "./dist/index.js",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "start": "node dist/index.js",
+    "start:http": "MCP_TRANSPORT=http node dist/http.js",
+    "lint": "eslint src",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wyre-technology/ncentral-mcp.git"
+  },
+  "keywords": [
+    "mcp",
+    "claude",
+    "ncentral",
+    "n-central",
+    "n-able",
+    "rmm",
+    "msp"
+  ],
+  "author": "Wyre Technology",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/wyre-technology/ncentral-mcp/issues"
+  },
+  "homepage": "https://github.com/wyre-technology/ncentral-mcp#readme",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.25.3",
+    "@wyre-technology/node-ncentral": "^1.0.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.4",
+    "@semantic-release/changelog": "^6.0.3",
+    "@semantic-release/git": "^10.0.1",
+    "@semantic-release/github": "^11.0.0",
+    "@types/node": "^26.0.1",
+    "eslint": "^9.39.4",
+    "globals": "^17.6.0",
+    "semantic-release": "^25.0.0",
+    "tsup": "^8.0.0",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.61.1",
+    "vitest": "^4.1.9"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}
