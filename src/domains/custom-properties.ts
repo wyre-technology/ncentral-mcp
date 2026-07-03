@@ -8,6 +8,7 @@ import {
   paginatedResult,
   paginationProperties,
   pickPagination,
+  toNumber,
 } from '../utils/results.js';
 
 function getTools(): Tool[] {
@@ -115,11 +116,11 @@ async function handleCall(
 ): Promise<CallToolResult> {
   const client = await getClient();
   const pagination = pickPagination(args);
-  const propertyId = args.propertyId as number;
+  const propertyId = toNumber(args.propertyId);
 
   switch (toolName) {
     case 'ncentral_list_org_custom_properties': {
-      const orgUnitId = args.orgUnitId as number;
+      const orgUnitId = toNumber(args.orgUnitId);
       const result = await client.orgUnits.customProperties(orgUnitId, pagination);
       return paginatedResult(
         result,
@@ -127,7 +128,7 @@ async function handleCall(
       );
     }
     case 'ncentral_get_org_custom_property': {
-      const orgUnitId = args.orgUnitId as number;
+      const orgUnitId = toNumber(args.orgUnitId);
       const property = await client.orgUnits.getCustomProperty(orgUnitId, propertyId);
       return entityResult(
         property,
@@ -135,13 +136,13 @@ async function handleCall(
       );
     }
     case 'ncentral_update_org_custom_property': {
-      const orgUnitId = args.orgUnitId as number;
+      const orgUnitId = toNumber(args.orgUnitId);
       const value = args.value as string;
       const result = await client.orgUnits.updateCustomProperty(orgUnitId, propertyId, value);
       return jsonResult(result ?? { updated: true, orgUnitId, propertyId, value });
     }
     case 'ncentral_list_device_custom_properties': {
-      const deviceId = args.deviceId as number;
+      const deviceId = toNumber(args.deviceId);
       const result = await client.devices.customProperties(deviceId, pagination);
       return paginatedResult(
         result,
@@ -149,7 +150,7 @@ async function handleCall(
       );
     }
     case 'ncentral_get_device_custom_property': {
-      const deviceId = args.deviceId as number;
+      const deviceId = toNumber(args.deviceId);
       const property = await client.devices.getCustomProperty(deviceId, propertyId);
       return entityResult(
         property,
@@ -157,7 +158,7 @@ async function handleCall(
       );
     }
     case 'ncentral_update_device_custom_property': {
-      const deviceId = args.deviceId as number;
+      const deviceId = toNumber(args.deviceId);
       const value = args.value as string;
       const result = await client.devices.updateCustomProperty(deviceId, propertyId, value);
       return jsonResult(result ?? { updated: true, deviceId, propertyId, value });

@@ -6,6 +6,7 @@ import {
   paginatedResult,
   paginationProperties,
   pickPagination,
+  toNumber,
 } from '../utils/results.js';
 
 function getTools(): Tool[] {
@@ -48,7 +49,7 @@ async function handleCall(
 ): Promise<CallToolResult> {
   const client = await getClient();
   const pagination = pickPagination(args);
-  const orgUnitId = args.orgUnitId as number;
+  const orgUnitId = toNumber(args.orgUnitId);
 
   switch (toolName) {
     case 'ncentral_list_active_issues': {

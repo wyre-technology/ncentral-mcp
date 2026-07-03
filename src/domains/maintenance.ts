@@ -9,6 +9,8 @@ import {
   paginatedResult,
   paginationProperties,
   pickPagination,
+  toNumber,
+  toNumberArray,
 } from '../utils/results.js';
 
 function getTools(): Tool[] {
@@ -96,7 +98,7 @@ async function handleCall(
 
   switch (toolName) {
     case 'ncentral_list_maintenance_windows': {
-      const deviceId = args.deviceId as number;
+      const deviceId = toNumber(args.deviceId);
       // Endpoint is device-scoped and unpaginated server-side; pagination args
       // are accepted for interface consistency but may be ignored by the API.
       pickPagination(args);
@@ -107,13 +109,13 @@ async function handleCall(
       );
     }
     case 'ncentral_add_maintenance_windows': {
-      const deviceIds = (args.deviceIds ?? []) as number[];
+      const deviceIds = toNumberArray(args.deviceIds);
       const windows = (args.windows ?? []) as unknown as MaintenanceWindowRequest[];
       const result = await client.devices.addMaintenanceWindows(deviceIds, windows);
       return jsonResult(result ?? { added: true, deviceIds, windowCount: windows.length });
     }
     case 'ncentral_delete_maintenance_windows': {
-      const scheduleIds = (args.scheduleIds ?? []) as number[];
+      const scheduleIds = toNumberArray(args.scheduleIds);
 
       const confirmed = await elicitConfirmation(
         `About to PERMANENTLY DELETE ${scheduleIds.length} maintenance window ` +

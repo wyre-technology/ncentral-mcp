@@ -177,6 +177,18 @@ describe('orgs domain', () => {
     expect(mocks.resources.customers.list).not.toHaveBeenCalled();
   });
 
+  it('coerces string ids to numbers (N-central responses carry ids as strings)', async () => {
+    mocks.resources.customers.get.mockResolvedValue({ customerId: '42', customerName: 'Acme' });
+    const handler = await getDomainHandler('orgs');
+    const result = await handler.handleCall('ncentral_get_customer', { customerId: '42' });
+    expect(result.isError).toBeUndefined();
+    expect(mocks.resources.customers.get).toHaveBeenCalledWith(42);
+
+    mocks.resources.serviceOrgs.customers.mockResolvedValue(page([{ customerId: '7' }]));
+    await handler.handleCall('ncentral_list_customers', { soId: '100' });
+    expect(mocks.resources.serviceOrgs.customers).toHaveBeenCalledWith(100, {});
+  });
+
   it('empty result: ncentral_list_customers with zero rows is an explicit error', async () => {
     mocks.resources.customers.list.mockResolvedValue(page([]));
     const handler = await getDomainHandler('orgs');

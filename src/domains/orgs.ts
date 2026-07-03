@@ -7,6 +7,8 @@ import {
   paginatedResult,
   paginationProperties,
   pickPagination,
+  toNumber,
+  toOptionalNumber,
 } from '../utils/results.js';
 
 function getTools(): Tool[] {
@@ -140,7 +142,7 @@ async function handleCall(
       return paginatedResult(result, `No service organizations found on ${serverLabel()}.`);
     }
     case 'ncentral_list_customers': {
-      const soId = args.soId as number | undefined;
+      const soId = toOptionalNumber(args.soId);
       const result =
         soId !== undefined
           ? await client.serviceOrgs.customers(soId, pagination)
@@ -149,7 +151,7 @@ async function handleCall(
       return paginatedResult(result, `No customers found${scope} on ${serverLabel()}.`);
     }
     case 'ncentral_get_customer': {
-      const customerId = args.customerId as number;
+      const customerId = toNumber(args.customerId);
       const customer = await client.customers.get(customerId);
       return entityResult(
         customer,
@@ -157,7 +159,7 @@ async function handleCall(
       );
     }
     case 'ncentral_list_sites': {
-      const customerId = args.customerId as number | undefined;
+      const customerId = toOptionalNumber(args.customerId);
       const result =
         customerId !== undefined
           ? await client.customers.sites(customerId, pagination)
@@ -166,7 +168,7 @@ async function handleCall(
       return paginatedResult(result, `No sites found${scope} on ${serverLabel()}.`);
     }
     case 'ncentral_get_site': {
-      const siteId = args.siteId as number;
+      const siteId = toNumber(args.siteId);
       const site = await client.sites.get(siteId);
       return entityResult(site, `No site found with id ${siteId} on ${serverLabel()}.`);
     }
@@ -175,7 +177,7 @@ async function handleCall(
       return paginatedResult(result, `No org units found on ${serverLabel()}.`);
     }
     case 'ncentral_get_org_unit': {
-      const orgUnitId = args.orgUnitId as number;
+      const orgUnitId = toNumber(args.orgUnitId);
       const orgUnit = await client.orgUnits.get(orgUnitId);
       return entityResult(
         orgUnit,
@@ -183,7 +185,7 @@ async function handleCall(
       );
     }
     case 'ncentral_list_org_unit_children': {
-      const orgUnitId = args.orgUnitId as number;
+      const orgUnitId = toNumber(args.orgUnitId);
       const result = await client.orgUnits.children(orgUnitId, pagination);
       return paginatedResult(
         result,
@@ -192,7 +194,7 @@ async function handleCall(
     }
     case 'ncentral_get_registration_token': {
       const kind = args.kind as string;
-      const id = args.id as number;
+      const id = toNumber(args.id);
       let token: unknown;
       switch (kind) {
         case 'customer':

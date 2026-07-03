@@ -9,6 +9,8 @@ import {
   paginatedResult,
   paginationProperties,
   pickPagination,
+  toNumber,
+  toOptionalNumber,
 } from '../utils/results.js';
 
 type NCentralClient = Awaited<ReturnType<typeof getClient>>;
@@ -71,10 +73,10 @@ function getTools(): Tool[] {
     {
       name: 'ncentral_update_device_lifecycle',
       description:
-        '⚠ HIGH-IMPACT. Updates the asset lifecycle information (warranty expiry, ' +
-        'purchase date, expected replacement date, cost, description) recorded for a ' +
-        'device in N-central. Existing lifecycle values are overwritten. ' +
-        'Confirm with the user before invoking.',
+        '⚠ HIGH-IMPACT. Partially updates (PATCH) the asset lifecycle information ' +
+        '(warranty expiry, purchase date, expected replacement date, cost, description) ' +
+        'recorded for a device in N-central. Only the supplied fields are changed, but ' +
+        'their existing values are overwritten. Confirm with the user before invoking.',
       annotations: {
         title: 'Update device lifecycle info',
         readOnlyHint: false,
@@ -199,7 +201,7 @@ async function handleCall(
 
   switch (toolName) {
     case 'ncentral_list_devices': {
-      let filterId = args.filterId as number | undefined;
+      let filterId = toOptionalNumber(args.filterId);
 
       if (filterId === undefined) {
         const scope = await resolveDeviceScope(client);
@@ -219,12 +221,12 @@ async function handleCall(
       return paginatedResult(result, `No devices found${scopeText} on ${serverLabel()}.`);
     }
     case 'ncentral_get_device': {
-      const deviceId = args.deviceId as number;
+      const deviceId = toNumber(args.deviceId);
       const device = await client.devices.get(deviceId);
       return entityResult(device, `No device found with id ${deviceId} on ${serverLabel()}.`);
     }
     case 'ncentral_get_device_assets': {
-      const deviceId = args.deviceId as number;
+      const deviceId = toNumber(args.deviceId);
       const assets = await client.devices.assets(deviceId);
       return entityResult(
         assets,
@@ -232,7 +234,7 @@ async function handleCall(
       );
     }
     case 'ncentral_get_device_lifecycle': {
-      const deviceId = args.deviceId as number;
+      const deviceId = toNumber(args.deviceId);
       const lifecycle = await client.devices.lifecycleInfo(deviceId);
       return entityResult(
         lifecycle,
@@ -240,13 +242,13 @@ async function handleCall(
       );
     }
     case 'ncentral_update_device_lifecycle': {
-      const deviceId = args.deviceId as number;
+      const deviceId = toNumber(args.deviceId);
       const data = (args.data ?? {}) as Record<string, unknown>;
       const result = await client.devices.updateLifecycleInfo(deviceId, data);
       return jsonResult(result ?? { updated: true, deviceId, lifecycle: data });
     }
     case 'ncentral_get_device_service_status': {
-      const deviceId = args.deviceId as number;
+      const deviceId = toNumber(args.deviceId);
       const status = await client.devices.serviceMonitorStatus(deviceId);
       return paginatedResult(
         status,
@@ -254,7 +256,7 @@ async function handleCall(
       );
     }
     case 'ncentral_list_devices_by_org_unit': {
-      const orgUnitId = args.orgUnitId as number;
+      const orgUnitId = toNumber(args.orgUnitId);
       const result = await client.orgUnits.devices(orgUnitId, pagination);
       return paginatedResult(
         result,

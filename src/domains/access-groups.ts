@@ -8,6 +8,7 @@ import {
   paginatedResult,
   paginationProperties,
   pickPagination,
+  toNumber,
 } from '../utils/results.js';
 
 function getTools(): Tool[] {
@@ -118,7 +119,7 @@ async function handleCall(
 
   switch (toolName) {
     case 'ncentral_list_access_groups': {
-      const orgUnitId = args.orgUnitId as number;
+      const orgUnitId = toNumber(args.orgUnitId);
       const result = await client.accessGroups.list(orgUnitId, pagination);
       return paginatedResult(
         result,
@@ -126,7 +127,7 @@ async function handleCall(
       );
     }
     case 'ncentral_get_access_group': {
-      const accessGroupId = args.accessGroupId as number;
+      const accessGroupId = toNumber(args.accessGroupId);
       const group = await client.accessGroups.get(accessGroupId);
       return entityResult(
         group,
@@ -134,7 +135,7 @@ async function handleCall(
       );
     }
     case 'ncentral_create_device_access_group': {
-      const orgUnitId = args.orgUnitId as number;
+      const orgUnitId = toNumber(args.orgUnitId);
       const data = {
         groupName: args.groupName as string,
         groupDescription: args.groupDescription as string,
@@ -145,7 +146,7 @@ async function handleCall(
       return jsonResult(result ?? { created: true, orgUnitId, groupName: data.groupName });
     }
     case 'ncentral_create_org_unit_access_group': {
-      const orgUnitId = args.orgUnitId as number;
+      const orgUnitId = toNumber(args.orgUnitId);
       const data = {
         groupName: args.groupName as string,
         groupDescription: args.groupDescription as string,

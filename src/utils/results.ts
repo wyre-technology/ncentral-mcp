@@ -77,6 +77,26 @@ export const paginationProperties: Record<string, object> = {
   },
 };
 
+/**
+ * Coerce a tool argument to a number. N-central response models carry most
+ * ids as strings (soId, customerId, siteId, orgUnitId, filterId), so LLMs
+ * frequently echo them back as strings — but SDK method id params are numbers.
+ */
+export function toNumber(value: unknown): number {
+  return typeof value === 'number' ? value : Number(value);
+}
+
+/** Optional-argument variant of toNumber. */
+export function toOptionalNumber(value: unknown): number | undefined {
+  if (value === undefined || value === null || value === '') return undefined;
+  return toNumber(value);
+}
+
+/** Coerce an array tool argument to number[]. */
+export function toNumberArray(value: unknown): number[] {
+  return Array.isArray(value) ? value.map((v) => toNumber(v)) : [];
+}
+
 /** Extract the standard pagination params from tool arguments. */
 export function pickPagination(args: Record<string, unknown>): PaginationParams {
   const params: PaginationParams = {};

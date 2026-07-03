@@ -10,6 +10,8 @@ import {
   paginatedResult,
   paginationProperties,
   pickPagination,
+  toNumber,
+  toOptionalNumber,
 } from '../utils/results.js';
 
 function getTools(): Tool[] {
@@ -112,7 +114,7 @@ async function handleCall(
 
   switch (toolName) {
     case 'ncentral_list_device_tasks': {
-      const deviceId = args.deviceId as number;
+      const deviceId = toNumber(args.deviceId);
       const result = await client.devices.tasks(deviceId, pagination);
       return paginatedResult(
         result,
@@ -120,12 +122,12 @@ async function handleCall(
       );
     }
     case 'ncentral_get_task': {
-      const taskId = args.taskId as number;
+      const taskId = toNumber(args.taskId);
       const task = await client.scheduledTasks.get(taskId);
       return entityResult(task, `No task found with id ${taskId} on ${serverLabel()}.`);
     }
     case 'ncentral_get_task_status': {
-      const taskId = args.taskId as number;
+      const taskId = toNumber(args.taskId);
       const status = await client.scheduledTasks.status(taskId);
       return entityResult(
         status,
@@ -133,7 +135,7 @@ async function handleCall(
       );
     }
     case 'ncentral_get_task_status_details': {
-      const taskId = args.taskId as number;
+      const taskId = toNumber(args.taskId);
       const details = await client.scheduledTasks.statusDetails(taskId, pagination);
       return paginatedResult(
         details,
@@ -142,7 +144,7 @@ async function handleCall(
     }
     case 'ncentral_create_direct_task': {
       const name = args.name as string;
-      const deviceId = args.deviceId as number;
+      const deviceId = toNumber(args.deviceId);
 
       const confirmed = await elicitConfirmation(
         `About to create direct task "${name}" which will execute IMMEDIATELY on device ` +
@@ -155,7 +157,13 @@ async function handleCall(
       // proceed with the original behavior (the tool description already
       // requires the caller to confirm with the user first).
 
-      const data = { ...args } as unknown as DirectSupportTask;
+      // Coerce numeric ids defensively — LLMs often echo ids back as strings.
+      const data = {
+        ...args,
+        deviceId,
+        itemId: toNumber(args.itemId),
+        customerId: toOptionalNumber(args.customerId),
+      } as unknown as DirectSupportTask;
       const result = await client.scheduledTasks.createDirect(data);
       return jsonResult(result ?? { created: true, name, deviceId });
     }
