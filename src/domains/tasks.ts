@@ -1,4 +1,5 @@
 import type { Tool } from '@modelcontextprotocol/sdk/types.js';
+import type { DirectSupportTask } from '@wyre-technology/node-ncentral';
 import type { CallToolResult, DomainHandler } from '../utils/types.js';
 import { getClient, serverLabel } from '../utils/client.js';
 import { elicitConfirmation } from '../utils/elicitation.js';
@@ -82,13 +83,13 @@ function getTools(): Tool[] {
             type: 'number',
             description: 'Repository item id of the script/task to execute',
           },
-          customerId: { type: 'number', description: 'Customer id owning the device (optional)' },
-          taskType: { type: 'string', description: 'Task type (optional)' },
+          customerId: { type: 'number', description: 'Customer id owning the device' },
+          taskType: { type: 'string', description: 'Task type, e.g. "AutomationPolicy" or "Script"' },
           credential: {
             type: 'object',
             description:
               'Execution credential, e.g. { "type": "LocalSystem" } or ' +
-              '{ "type": "CustomCredentials", "username": "...", "password": "..." } (optional)',
+              '{ "type": "CustomCredentials", "username": "...", "password": "..." }',
           },
           parameters: {
             type: 'array',
@@ -96,7 +97,7 @@ function getTools(): Tool[] {
             items: { type: 'object' },
           },
         },
-        required: ['name', 'deviceId', 'itemId'],
+        required: ['name', 'deviceId', 'itemId', 'taskType', 'customerId', 'credential'],
       },
     },
   ];
@@ -154,7 +155,8 @@ async function handleCall(
       // proceed with the original behavior (the tool description already
       // requires the caller to confirm with the user first).
 
-      const result = await client.scheduledTasks.createDirect({ ...args });
+      const data = { ...args } as unknown as DirectSupportTask;
+      const result = await client.scheduledTasks.createDirect(data);
       return jsonResult(result ?? { created: true, name, deviceId });
     }
     default:

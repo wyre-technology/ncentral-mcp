@@ -51,21 +51,21 @@ function getTools(): Tool[] {
       inputSchema: {
         type: 'object' as const,
         properties: {
+          orgUnitId: { type: 'number', description: 'Org unit to create the group under' },
           groupName: { type: 'string', description: 'Name for the access group' },
-          groupDescription: { type: 'string', description: 'Description (optional)' },
-          orgUnitId: { type: 'number', description: 'Org unit the group belongs to' },
+          groupDescription: { type: 'string', description: 'Description for the access group' },
           deviceIds: {
             type: 'array',
-            description: 'Device ids to include in the group (optional)',
-            items: { type: 'number' },
+            description: 'Device ids (as strings) to include in the group (optional)',
+            items: { type: 'string' },
           },
           userIds: {
             type: 'array',
-            description: 'User ids to grant access to the group (optional)',
-            items: { type: 'number' },
+            description: 'User ids (as strings) to grant access to the group (optional)',
+            items: { type: 'string' },
           },
         },
-        required: ['groupName', 'orgUnitId'],
+        required: ['orgUnitId', 'groupName', 'groupDescription'],
       },
     },
     {
@@ -85,21 +85,25 @@ function getTools(): Tool[] {
       inputSchema: {
         type: 'object' as const,
         properties: {
+          orgUnitId: { type: 'number', description: 'Org unit to create the group under' },
           groupName: { type: 'string', description: 'Name for the access group' },
-          groupDescription: { type: 'string', description: 'Description (optional)' },
-          orgUnitId: { type: 'number', description: 'Org unit the group belongs to' },
+          groupDescription: { type: 'string', description: 'Description for the access group' },
           orgUnitIds: {
             type: 'array',
-            description: 'Org unit ids to include in the group (optional)',
-            items: { type: 'number' },
+            description: 'Org unit ids (as strings) to include in the group (optional)',
+            items: { type: 'string' },
           },
           userIds: {
             type: 'array',
-            description: 'User ids to grant access to the group (optional)',
-            items: { type: 'number' },
+            description: 'User ids (as strings) to grant access to the group (optional)',
+            items: { type: 'string' },
+          },
+          autoIncludeNewOrgUnits: {
+            type: 'string',
+            description: 'Whether new org units are auto-included, "true" or "false" (optional)',
           },
         },
-        required: ['groupName', 'orgUnitId'],
+        required: ['orgUnitId', 'groupName', 'groupDescription'],
       },
     },
   ];
@@ -130,12 +134,27 @@ async function handleCall(
       );
     }
     case 'ncentral_create_device_access_group': {
-      const result = await client.accessGroups.createDeviceGroup({ ...args });
-      return jsonResult(result ?? { created: true, groupName: args.groupName });
+      const orgUnitId = args.orgUnitId as number;
+      const data = {
+        groupName: args.groupName as string,
+        groupDescription: args.groupDescription as string,
+        deviceIds: args.deviceIds as string[] | undefined,
+        userIds: args.userIds as string[] | undefined,
+      };
+      const result = await client.accessGroups.createDeviceGroup(orgUnitId, data);
+      return jsonResult(result ?? { created: true, orgUnitId, groupName: data.groupName });
     }
     case 'ncentral_create_org_unit_access_group': {
-      const result = await client.accessGroups.createOrgUnitGroup({ ...args });
-      return jsonResult(result ?? { created: true, groupName: args.groupName });
+      const orgUnitId = args.orgUnitId as number;
+      const data = {
+        groupName: args.groupName as string,
+        groupDescription: args.groupDescription as string,
+        orgUnitIds: args.orgUnitIds as string[] | undefined,
+        userIds: args.userIds as string[] | undefined,
+        autoIncludeNewOrgUnits: args.autoIncludeNewOrgUnits as string | undefined,
+      };
+      const result = await client.accessGroups.createOrgUnitGroup(orgUnitId, data);
+      return jsonResult(result ?? { created: true, orgUnitId, groupName: data.groupName });
     }
     default:
       return errorResult(`Unknown tool: ${toolName}`);

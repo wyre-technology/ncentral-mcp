@@ -24,12 +24,27 @@ export type NavigationState = {
   currentDomain: DomainName | null;
 };
 
+/** Sorting direction accepted by the N-central API (case insensitive). */
+export type SortOrder =
+  | 'asc'
+  | 'ascending'
+  | 'natural'
+  | 'desc'
+  | 'descending'
+  | 'reverse'
+  | 'ASC'
+  | 'ASCENDING'
+  | 'NATURAL'
+  | 'DESC'
+  | 'DESCENDING'
+  | 'REVERSE';
+
 /** Standard N-central pagination query params (see developer.n-able.com). */
 export interface PaginationParams {
   pageNumber?: number;
   pageSize?: number;
   sortBy?: string;
-  sortOrder?: string;
+  sortOrder?: SortOrder;
 }
 
 /** The paginated envelope returned by N-central list endpoints. */

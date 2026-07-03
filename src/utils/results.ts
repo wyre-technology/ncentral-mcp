@@ -5,7 +5,7 @@
  * "No X found" message — never a bare empty array. An empty success response
  * invites the LLM to hallucinate data that does not exist in N-central.
  */
-import type { CallToolResult, PaginatedEnvelope, PaginationParams } from './types.js';
+import type { CallToolResult, PaginatedEnvelope, PaginationParams, SortOrder } from './types.js';
 
 export function jsonResult(value: unknown): CallToolResult {
   return { content: [{ type: 'text', text: JSON.stringify(value, null, 2) }] };
@@ -63,7 +63,7 @@ export function paginatedResult(response: unknown, emptyMessage: string): CallTo
 }
 
 /** JSON-schema properties for the standard N-central pagination params. */
-export const paginationProperties: Record<string, unknown> = {
+export const paginationProperties: Record<string, object> = {
   pageNumber: { type: 'number', description: '1-based page number (default 1)' },
   pageSize: {
     type: 'number',
@@ -83,6 +83,6 @@ export function pickPagination(args: Record<string, unknown>): PaginationParams 
   if (typeof args.pageNumber === 'number') params.pageNumber = args.pageNumber;
   if (typeof args.pageSize === 'number') params.pageSize = args.pageSize;
   if (typeof args.sortBy === 'string') params.sortBy = args.sortBy;
-  if (typeof args.sortOrder === 'string') params.sortOrder = args.sortOrder;
+  if (typeof args.sortOrder === 'string') params.sortOrder = args.sortOrder as SortOrder;
   return params;
 }

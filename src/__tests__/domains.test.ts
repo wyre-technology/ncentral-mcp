@@ -268,17 +268,17 @@ describe('tasks domain', () => {
     // null — the handler must proceed with the original behavior.
     mocks.resources.scheduledTasks.createDirect.mockResolvedValue({ taskId: 99 });
     const handler = await getDomainHandler('tasks');
-    const result = await handler.handleCall('ncentral_create_direct_task', {
+    const args = {
       name: 'Run script',
       deviceId: 5,
       itemId: 12,
-    });
+      taskType: 'Script',
+      customerId: 100,
+      credential: { type: 'LocalSystem' },
+    };
+    const result = await handler.handleCall('ncentral_create_direct_task', args);
     expect(result.isError).toBeUndefined();
-    expect(mocks.resources.scheduledTasks.createDirect).toHaveBeenCalledWith({
-      name: 'Run script',
-      deviceId: 5,
-      itemId: 12,
-    });
+    expect(mocks.resources.scheduledTasks.createDirect).toHaveBeenCalledWith(args);
   });
 });
 

@@ -1,4 +1,5 @@
 import type { Tool } from '@modelcontextprotocol/sdk/types.js';
+import type { MaintenanceWindowRequest } from '@wyre-technology/node-ncentral';
 import type { CallToolResult, DomainHandler } from '../utils/types.js';
 import { getClient, serverLabel } from '../utils/client.js';
 import { elicitConfirmation } from '../utils/elicitation.js';
@@ -49,8 +50,10 @@ function getTools(): Tool[] {
           windows: {
             type: 'array',
             description:
-              'Maintenance window definitions (name, type, schedule/start time, ' +
-              'duration, enabled flag, etc.)',
+              'Maintenance window definitions. Each requires name, type, cron ' +
+              '(schedule expression), duration (minutes), enabled (boolean), and ' +
+              'applicableAction (array of { type, actions }); optional fields include ' +
+              'rebootMethod, rebootDelay, maxDowntime, userMessage settings.',
             items: { type: 'object' },
           },
         },
@@ -105,7 +108,7 @@ async function handleCall(
     }
     case 'ncentral_add_maintenance_windows': {
       const deviceIds = (args.deviceIds ?? []) as number[];
-      const windows = (args.windows ?? []) as Array<Record<string, unknown>>;
+      const windows = (args.windows ?? []) as unknown as MaintenanceWindowRequest[];
       const result = await client.devices.addMaintenanceWindows(deviceIds, windows);
       return jsonResult(result ?? { added: true, deviceIds, windowCount: windows.length });
     }
