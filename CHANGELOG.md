@@ -1,3 +1,10 @@
+## [1.0.1](https://github.com/wyre-technology/ncentral-mcp/compare/v1.0.0...v1.0.1) (2026-07-06)
+
+
+### Bug Fixes
+
+* expose all tools flat in tools/list to match fleet (conduit compatibility) ([#1](https://github.com/wyre-technology/ncentral-mcp/issues/1)) ([daee31f](https://github.com/wyre-technology/ncentral-mcp/commit/daee31f6aa64f90037343f4d4795c83e14cdddf1))
+
 # 1.0.0 (2026-07-03)
 
 
