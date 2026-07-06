@@ -20,10 +20,6 @@ export interface DomainHandler {
   handleCall(toolName: string, args: Record<string, unknown>): Promise<CallToolResult>;
 }
 
-export type NavigationState = {
-  currentDomain: DomainName | null;
-};
-
 /** Sorting direction accepted by the N-central API (case insensitive). */
 export type SortOrder =
   | 'asc'

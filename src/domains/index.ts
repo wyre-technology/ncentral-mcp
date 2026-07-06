@@ -1,4 +1,6 @@
+import type { Tool } from '@modelcontextprotocol/sdk/types.js';
 import type { DomainHandler, DomainName } from '../utils/types.js';
+import { DOMAIN_NAMES } from './navigation.js';
 
 const domainCache = new Map<DomainName, DomainHandler>();
 
@@ -54,4 +56,35 @@ export async function getDomainHandler(domain: DomainName): Promise<DomainHandle
 
   domainCache.set(domain, handler);
   return handler;
+}
+
+/**
+ * Every tool from every domain, concatenated into a single flat list.
+ *
+ * The server exposes tools flat (all at once) rather than gating them behind
+ * navigation — this matches the deployed WYRE fleet and lets one-shot
+ * `tools/list` aggregation (e.g. Conduit) see the full tool surface.
+ */
+export async function getAllDomainTools(): Promise<Tool[]> {
+  const tools: Tool[] = [];
+  for (const domain of DOMAIN_NAMES) {
+    const handler = await getDomainHandler(domain);
+    tools.push(...handler.getTools());
+  }
+  return tools;
+}
+
+/**
+ * Resolve the domain handler that owns a given tool name, or undefined if no
+ * domain exposes it. Used to route `tools/call` purely by tool name, without
+ * requiring a prior `ncentral_navigate`.
+ */
+export async function getHandlerForTool(toolName: string): Promise<DomainHandler | undefined> {
+  for (const domain of DOMAIN_NAMES) {
+    const handler = await getDomainHandler(domain);
+    if (handler.getTools().some((tool) => tool.name === toolName)) {
+      return handler;
+    }
+  }
+  return undefined;
 }

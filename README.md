@@ -7,16 +7,17 @@ and access groups.
 
 Built on [`@wyre-technology/node-ncentral`](https://github.com/wyre-technology/node-ncentral).
 
-## Decision-tree navigation
+## Tool exposure
 
-To keep the tool surface small, the server uses decision-tree navigation. The initial
-`tools/list` exposes only the navigation tools; call `ncentral_navigate` with a domain
-name to load that domain's tools (plus `ncentral_back` to return to the menu).
+All tools are exposed flat: `tools/list` always returns the full set (the two helpers
+below plus every domain tool), and `tools/call` routes by tool name — you can call any
+tool directly without a prior navigation step. This matches the deployed WYRE fleet and
+lets one-shot `tools/list` aggregation (e.g. the Conduit gateway) see the complete tool
+surface.
 
 | Tool | Description |
 |------|-------------|
-| `ncentral_navigate` | Navigate to a domain (`system`, `orgs`, `devices`, `monitoring`, `tasks`, `custom-properties`, `maintenance`, `access-groups`) |
-| `ncentral_back` | Return to the domain menu |
+| `ncentral_navigate` | Optional informational helper that lists the tool domains (`system`, `orgs`, `devices`, `monitoring`, `tasks`, `custom-properties`, `maintenance`, `access-groups`) |
 | `ncentral_status` | Connectivity check — calls the health + server-info endpoints |
 
 ## Tool catalog

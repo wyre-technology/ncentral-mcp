@@ -22,10 +22,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Expose all tools flat in `tools/list` to match the deployed fleet (Conduit
+  compatibility). `tools/list` now always returns the full set (informational
+  helpers plus every domain tool) and `tools/call` routes purely by tool name —
+  a prior `ncentral_navigate` is no longer required. Replaces the previous
+  per-session decision-tree navigation that surfaced only the navigation tools
+  until a domain was selected.
+
+### Removed
+
+- `ncentral_back` tool and the per-session navigation state machine — obsolete
+  under flat tool exposure. `ncentral_navigate` is retained as an optional,
+  informational helper (its `domain` argument is now optional).
+
 ### Added
 
-- Initial N-central MCP server with decision-tree navigation (`ncentral_navigate`,
-  `ncentral_back`, `ncentral_status`).
+- Initial N-central MCP server with the `ncentral_navigate` and `ncentral_status`
+  helper tools.
 - Domains: system, orgs, devices, monitoring, tasks, custom-properties, maintenance,
   access-groups (37 tools total).
 - Stdio and stateless Streamable HTTP transports; gateway credential injection via
