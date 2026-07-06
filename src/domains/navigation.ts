@@ -1,5 +1,5 @@
 import type { Tool } from '@modelcontextprotocol/sdk/types.js';
-import type { CallToolResult, DomainName, NavigationState } from '../utils/types.js';
+import type { CallToolResult, DomainName } from '../utils/types.js';
 import { getClient, getCredentials } from '../utils/client.js';
 import { jsonResult } from '../utils/results.js';
 
@@ -14,26 +14,19 @@ export const DOMAIN_NAMES: DomainName[] = [
   'access-groups',
 ];
 
-const sessionStates = new Map<string, NavigationState>();
-
-export function getState(sessionId: string = 'default'): NavigationState {
-  if (!sessionStates.has(sessionId)) {
-    sessionStates.set(sessionId, { currentDomain: null });
-  }
-  return sessionStates.get(sessionId)!;
-}
-
-/** Test helper: clear all navigation state. */
-export function resetStates(): void {
-  sessionStates.clear();
-}
-
+/**
+ * Informational helper tools. Every domain tool is exposed flat alongside these
+ * (see server.ts / getAllDomainTools), so navigation is optional — these tools
+ * only provide guidance and a connectivity check, they never gate the tool list.
+ */
 export function getNavigationTools(): Tool[] {
   return [
     {
       name: 'ncentral_navigate',
       description:
-        'Navigate to an N-central domain to access its tools. Domains: ' +
+        'Optional helper describing the N-central tool domains. All tools are ' +
+        'exposed directly, so you can call any tool by name without navigating ' +
+        'first. Domains: ' +
         'system (health, server info, token validation), ' +
         'orgs (service organizations, customers, sites, org units, registration tokens), ' +
         'devices (device inventory, assets, lifecycle, service status, saved filters), ' +
@@ -48,10 +41,9 @@ export function getNavigationTools(): Tool[] {
           domain: {
             type: 'string',
             enum: DOMAIN_NAMES,
-            description: 'The domain to navigate to',
+            description: 'Optional domain to describe',
           },
         },
-        required: ['domain'],
       },
     },
     {
@@ -64,16 +56,24 @@ export function getNavigationTools(): Tool[] {
   ];
 }
 
-export function getBackTool(): Tool {
-  return {
-    name: 'ncentral_back',
-    description: 'Return to the domain navigation menu.',
-    inputSchema: { type: 'object' as const, properties: {} },
-  };
+/**
+ * Handler for ncentral_navigate — purely informational. Since every tool is
+ * exposed flat, this just reports the available domains (and echoes the given
+ * domain, if any) so callers understand the tool surface. It never changes
+ * which tools are listed or callable.
+ */
+export async function handleNavigate(domain?: DomainName): Promise<CallToolResult> {
+  return jsonResult({
+    domain: domain ?? null,
+    domains: DOMAIN_NAMES,
+    note:
+      'All N-central tools are exposed directly. Call any tool by name — ' +
+      'navigating to a domain first is not required.',
+  });
 }
 
 /** Handler for ncentral_status — reports connectivity via health + server info. */
-export async function handleStatus(currentDomain: DomainName | null): Promise<CallToolResult> {
+export async function handleStatus(): Promise<CallToolResult> {
   const creds = getCredentials();
   if (!creds) {
     return jsonResult({
@@ -82,7 +82,6 @@ export async function handleStatus(currentDomain: DomainName | null): Promise<Ca
         'No credentials configured. Set NCENTRAL_SERVER_URL and NCENTRAL_JWT ' +
         'environment variables, or pass x-ncentral-server-url / x-ncentral-jwt headers in gateway mode.',
       domains: DOMAIN_NAMES,
-      currentDomain,
     });
   }
 
@@ -98,7 +97,6 @@ export async function handleStatus(currentDomain: DomainName | null): Promise<Ca
       health,
       serverInfo,
       domains: DOMAIN_NAMES,
-      currentDomain,
     });
   } catch (error) {
     return {
@@ -111,7 +109,6 @@ export async function handleStatus(currentDomain: DomainName | null): Promise<Ca
               serverUrl: creds.serverUrl,
               error: error instanceof Error ? error.message : String(error),
               domains: DOMAIN_NAMES,
-              currentDomain,
             },
             null,
             2

@@ -3,14 +3,8 @@ import {
   CallToolRequestSchema,
   ListToolsRequestSchema,
 } from '@modelcontextprotocol/sdk/types.js';
-import {
-  DOMAIN_NAMES,
-  getBackTool,
-  getNavigationTools,
-  getState,
-  handleStatus,
-} from './domains/navigation.js';
-import { getDomainHandler } from './domains/index.js';
+import { getNavigationTools, handleNavigate, handleStatus } from './domains/navigation.js';
+import { getAllDomainTools, getHandlerForTool } from './domains/index.js';
 import { setServerRef } from './utils/server-ref.js';
 import { logger } from './utils/logger.js';
 import type { DomainName } from './utils/types.js';
@@ -18,80 +12,40 @@ import type { DomainName } from './utils/types.js';
 export function createServer(): Server {
   const server = new Server(
     { name: 'ncentral-mcp', version: '1.0.0' },
-    { capabilities: { tools: { listChanged: true } } }
+    { capabilities: { tools: {} } }
   );
 
   setServerRef(server);
 
-  server.setRequestHandler(ListToolsRequestSchema, async (_request, extra) => {
-    const sessionId = (extra as { sessionId?: string }).sessionId || 'default';
-    const state = getState(sessionId);
-
-    if (!state.currentDomain) {
-      return { tools: getNavigationTools() };
-    }
-
-    const handler = await getDomainHandler(state.currentDomain);
-    return { tools: [...handler.getTools(), getBackTool()] };
+  // Expose ALL tools flat, always: the informational helpers plus every
+  // domain's tools. This matches the deployed WYRE fleet and lets one-shot
+  // tools/list aggregation (e.g. Conduit) see the full tool surface, rather
+  // than gating tools behind a per-session navigation state machine.
+  server.setRequestHandler(ListToolsRequestSchema, async () => {
+    const domainTools = await getAllDomainTools();
+    return { tools: [...getNavigationTools(), ...domainTools] };
   });
 
-  server.setRequestHandler(CallToolRequestSchema, async (request, extra) => {
+  // Route tools/call purely by tool name — no prior ncentral_navigate required.
+  server.setRequestHandler(CallToolRequestSchema, async (request) => {
     const { name, arguments: args } = request.params;
-    const sessionId = (extra as { sessionId?: string }).sessionId || 'default';
-    const state = getState(sessionId);
 
+    // Informational / connectivity helpers.
     if (name === 'ncentral_navigate') {
-      const domain = args?.domain as DomainName;
-      if (!DOMAIN_NAMES.includes(domain)) {
-        return {
-          content: [
-            {
-              type: 'text' as const,
-              text: `Unknown domain: ${domain}. Valid domains: ${DOMAIN_NAMES.join(', ')}`,
-            },
-          ],
-          isError: true,
-        };
-      }
-      state.currentDomain = domain;
-      const handler = await getDomainHandler(domain);
-      const tools = handler.getTools().map((t) => t.name);
-      await server.sendToolListChanged();
-      return {
-        content: [
-          {
-            type: 'text' as const,
-            text: `Navigated to ${domain}. Available tools: ${tools.join(', ')}. Use ncentral_back to return to the domain menu.`,
-          },
-        ],
-      };
+      return handleNavigate(args?.domain as DomainName | undefined);
     }
-
-    if (name === 'ncentral_back') {
-      state.currentDomain = null;
-      await server.sendToolListChanged();
-      return {
-        content: [{ type: 'text' as const, text: 'Returned to domain navigation.' }],
-      };
-    }
-
     if (name === 'ncentral_status') {
-      return handleStatus(state.currentDomain);
+      return handleStatus();
     }
 
-    if (!state.currentDomain) {
+    const handler = await getHandlerForTool(name);
+    if (!handler) {
       return {
-        content: [
-          {
-            type: 'text' as const,
-            text: `Unknown tool: ${name}. Use ncentral_navigate first to select a domain.`,
-          },
-        ],
+        content: [{ type: 'text' as const, text: `Unknown tool: ${name}` }],
         isError: true,
       };
     }
 
-    const handler = await getDomainHandler(state.currentDomain);
     try {
       return await handler.handleCall(name, args || {});
     } catch (error) {
