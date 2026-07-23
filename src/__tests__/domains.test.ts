@@ -70,7 +70,6 @@ vi.mock('@wyre-technology/node-ncentral', () => ({
 }));
 
 import { getDomainHandler } from '../domains/index.js';
-import { resetClient } from '../utils/client.js';
 import type { DomainName } from '../utils/types.js';
 
 const DOMAINS: DomainName[] = [
@@ -96,7 +95,6 @@ const page = (data: unknown[]) => ({
 beforeEach(() => {
   process.env.NCENTRAL_SERVER_URL = 'https://ncentral.example.com';
   process.env.NCENTRAL_JWT = 'test-jwt';
-  resetClient();
   vi.clearAllMocks();
 });
 
@@ -394,7 +392,6 @@ describe('credential errors surface clearly', () => {
   it('tool calls without credentials fail with a configuration message', async () => {
     delete process.env.NCENTRAL_SERVER_URL;
     delete process.env.NCENTRAL_JWT;
-    resetClient();
     const handler = await getDomainHandler('system');
     await expect(handler.handleCall('ncentral_health', {})).rejects.toThrow(
       /No N-central credentials configured/
