@@ -1,3 +1,10 @@
+## [1.0.2](https://github.com/wyre-technology/ncentral-mcp/compare/v1.0.1...v1.0.2) (2026-07-23)
+
+
+### Bug Fixes
+
+* **security:** request-scoped credentials via AsyncLocalStorage to close cross-tenant leak ([#2](https://github.com/wyre-technology/ncentral-mcp/issues/2)) ([7a7358a](https://github.com/wyre-technology/ncentral-mcp/commit/7a7358a3869db4dcae2da5213af7c1e1334a4ad6))
+
 ## [1.0.1](https://github.com/wyre-technology/ncentral-mcp/compare/v1.0.0...v1.0.1) (2026-07-06)
 
 

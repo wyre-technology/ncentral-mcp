@@ -1,6 +1,6 @@
 {
   "name": "ncentral-mcp",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "MCP server for N-able N-central — org units, devices, monitoring, scheduled tasks, custom properties, maintenance windows, access groups",
   "type": "module",
   "main": "./dist/index.js",
