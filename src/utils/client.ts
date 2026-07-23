@@ -1,13 +1,15 @@
 /**
- * NCentralClient singleton with credential-change invalidation.
+ * NCentralClient factory with request-scoped credentials.
  *
- * Credentials come from the environment (NCENTRAL_SERVER_URL + NCENTRAL_JWT).
- * In gateway mode the HTTP layer copies the per-request headers
- * (x-ncentral-server-url / x-ncentral-jwt) into process.env before the MCP
- * request is handled, and the singleton is keyed on (serverUrl, jwt) so a
- * credential change transparently builds a fresh client.
+ * Credentials come from the environment (NCENTRAL_SERVER_URL + NCENTRAL_JWT)
+ * for stdio/single-tenant mode, or from an AsyncLocalStorage-scoped store in
+ * gateway mode: the HTTP layer wraps each request in
+ * runWithCredentials({serverUrl, jwt}, handler) so concurrent requests from
+ * different tenants never observe each other's credentials. A fresh client
+ * is built per call — no shared/mutable singleton.
  */
-import type { NCentralClient } from '@wyre-technology/node-ncentral';
+import { NCentralClient } from '@wyre-technology/node-ncentral';
+import { AsyncLocalStorage } from 'node:async_hooks';
 import { logger } from './logger.js';
 
 export interface Credentials {
@@ -15,10 +17,18 @@ export interface Credentials {
   jwt: string;
 }
 
-let _client: NCentralClient | null = null;
-let _credentials: Credentials | null = null;
+// Request-scoped credential store. In gateway mode the HTTP layer runs each
+// request inside runWithCredentials({serverUrl, jwt}); getCredentials() reads
+// it. Falls back to process.env for stdio/single-tenant mode.
+const credStore = new AsyncLocalStorage<Credentials>();
+
+export function runWithCredentials<T>(creds: Credentials, fn: () => T): T {
+  return credStore.run(creds, fn);
+}
 
 export function getCredentials(): Credentials | null {
+  const scoped = credStore.getStore();
+  if (scoped?.serverUrl && scoped?.jwt) return scoped;
   const serverUrl = process.env.NCENTRAL_SERVER_URL;
   const jwt = process.env.NCENTRAL_JWT;
   if (!serverUrl || !jwt) return null;
@@ -27,7 +37,7 @@ export function getCredentials(): Credentials | null {
 
 /** Human-readable server name for error messages. */
 export function serverLabel(): string {
-  return process.env.NCENTRAL_SERVER_URL || 'the configured N-central server';
+  return getCredentials()?.serverUrl || 'the configured N-central server';
 }
 
 export async function getClient(): Promise<NCentralClient> {
@@ -39,58 +49,6 @@ export async function getClient(): Promise<NCentralClient> {
     );
   }
 
-  // Invalidate the cached client if either credential changed (the gateway
-  // injects per-request credentials, which may belong to a different tenant).
-  if (
-    _client &&
-    _credentials &&
-    (creds.serverUrl !== _credentials.serverUrl || creds.jwt !== _credentials.jwt)
-  ) {
-    logger.debug('N-central credentials changed — rebuilding client');
-    _client = null;
-    _credentials = null;
-  }
-
-  if (!_client) {
-    const { NCentralClient } = await import('@wyre-technology/node-ncentral');
-    _client = new NCentralClient({ serverUrl: creds.serverUrl, jwt: creds.jwt });
-    _credentials = creds;
-  }
-  return _client;
-}
-
-export function resetClient(): void {
-  _client = null;
-  _credentials = null;
-}
-
-/**
- * Gateway mode: copy per-request credential headers into process.env and
- * invalidate the client singleton when they change. Requests without
- * credentials are NEVER rejected — tools/list must work without them;
- * tools/call fails with a clear error instead.
- */
-export function applyGatewayCredentials(
-  headers: Record<string, string | string[] | undefined>
-): void {
-  const serverUrl = headerValue(headers['x-ncentral-server-url']);
-  const jwt = headerValue(headers['x-ncentral-jwt']);
-
-  let changed = false;
-  if (serverUrl && serverUrl !== process.env.NCENTRAL_SERVER_URL) {
-    process.env.NCENTRAL_SERVER_URL = serverUrl;
-    changed = true;
-  }
-  if (jwt && jwt !== process.env.NCENTRAL_JWT) {
-    process.env.NCENTRAL_JWT = jwt;
-    changed = true;
-  }
-  if (changed) {
-    resetClient();
-  }
-}
-
-function headerValue(value: string | string[] | undefined): string | undefined {
-  if (Array.isArray(value)) return value[0];
-  return value;
+  logger.debug('Building N-central client', { serverUrl: creds.serverUrl });
+  return new NCentralClient({ serverUrl: creds.serverUrl, jwt: creds.jwt });
 }
