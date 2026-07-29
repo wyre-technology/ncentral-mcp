@@ -5,7 +5,6 @@ import {
 } from '@modelcontextprotocol/sdk/types.js';
 import { getNavigationTools, handleNavigate, handleStatus } from './domains/navigation.js';
 import { getAllDomainTools, getHandlerForTool } from './domains/index.js';
-import { setServerRef } from './utils/server-ref.js';
 import { logger } from './utils/logger.js';
 import type { DomainName } from './utils/types.js';
 
@@ -15,7 +14,10 @@ export function createServer(): Server {
     { capabilities: { tools: {} } }
   );
 
-  setServerRef(server);
+  // Caller (index.ts / http.ts) is responsible for binding this server into
+  // the per-request async context via runWithServerRef/bindServerRef — see
+  // utils/server-ref.ts. Doing it here would set a module-level ref, the
+  // exact cross-tenant bug this file used to have.
 
   // Expose ALL tools flat, always: the informational helpers plus every
   // domain's tools. This matches the deployed WYRE fleet and lets one-shot
