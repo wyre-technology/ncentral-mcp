@@ -1,3 +1,10 @@
+## [1.0.3](https://github.com/wyre-technology/ncentral-mcp/compare/v1.0.2...v1.0.3) (2026-07-29)
+
+
+### Bug Fixes
+
+* **security:** close cross-tenant server-ref misroute via AsyncLocalStorage ([#4](https://github.com/wyre-technology/ncentral-mcp/issues/4)) ([f6fb308](https://github.com/wyre-technology/ncentral-mcp/commit/f6fb308cb99f2214cc3dace4a2bd236bda3754ae))
+
 ## [1.0.2](https://github.com/wyre-technology/ncentral-mcp/compare/v1.0.1...v1.0.2) (2026-07-23)
 
 
