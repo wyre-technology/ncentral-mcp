@@ -1,4 +1,4 @@
-FROM node:22-alpine AS builder
+FROM node:26-alpine AS builder
 WORKDIR /app
 
 COPY package*.json ./
@@ -12,7 +12,7 @@ RUN npm run build
 # GitHub Packages auth, so pruning there would strip @wyre-technology/* deps.
 RUN npm prune --omit=dev
 
-FROM node:22-alpine AS production
+FROM node:26-alpine AS production
 
 # OCI label links the GHCR package to this repository,
 # enabling GITHUB_TOKEN write access from Actions workflows.
