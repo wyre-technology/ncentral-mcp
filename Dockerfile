@@ -9,18 +9,18 @@ RUN --mount=type=secret,id=npmrc,target=/root/.npmrc npm ci --ignore-scripts
 COPY . .
 RUN npm run build
 # Prune dev dependencies in the builder stage — the production stage has no
-# GitHub Packages auth, so pruning there would strip @wyre-technology/* deps.
+# GitHub Packages auth, so pruning there would strip @wyre-ai/* deps.
 RUN npm prune --omit=dev
 
 FROM node:26-alpine AS production
 
 # OCI label links the GHCR package to this repository,
 # enabling GITHUB_TOKEN write access from Actions workflows.
-LABEL org.opencontainers.image.source="https://github.com/wyre-technology/ncentral-mcp"
+LABEL org.opencontainers.image.source="https://github.com/WYRE-AI/ncentral-mcp"
 LABEL org.opencontainers.image.description="MCP server for N-able N-central"
 LABEL org.opencontainers.image.licenses="Apache-2.0"
 LABEL org.opencontainers.image.vendor="Wyre Technology"
-LABEL io.modelcontextprotocol.server.name="io.github.wyre-technology/ncentral-mcp"
+LABEL io.modelcontextprotocol.server.name="io.github.WYRE-AI/ncentral-mcp"
 
 RUN addgroup -g 1001 -S mcp && adduser -u 1001 -S mcp -G mcp
 WORKDIR /app
