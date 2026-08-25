@@ -5,7 +5,7 @@ It exposes the N-central REST API (`/api`) to Claude and other MCP clients: org 
 device inventory, monitoring, scheduled tasks, custom properties, maintenance windows,
 and access groups.
 
-Built on [`@wyre-technology/node-ncentral`](https://github.com/wyre-technology/node-ncentral).
+Built on [`@wyre-technology/node-ncentral`](https://github.com/WYRE-AI/node-ncentral).
 
 ## Tool exposure
 
@@ -182,7 +182,7 @@ docker run -p 8080:8080 \
   -e AUTH_MODE=env \
   -e NCENTRAL_SERVER_URL=https://ncentral.example.com \
   -e NCENTRAL_JWT=eyJ... \
-  ghcr.io/wyre-technology/ncentral-mcp:latest
+  ghcr.io/wyre-ai/ncentral-mcp:latest
 ```
 
 ## Gateway mode
@@ -213,7 +213,7 @@ requests (different tenant), the internal API client is rebuilt automatically.
     -e NODE_EXTRA_CA_CERTS=/certs/ca.pem \
     -e NCENTRAL_SERVER_URL=https://ncentral.internal.example.com \
     -e NCENTRAL_JWT=eyJ... \
-    ghcr.io/wyre-technology/ncentral-mcp:latest
+    ghcr.io/wyre-ai/ncentral-mcp:latest
   ```
 
   **Never disable TLS verification** (`NODE_TLS_REJECT_UNAUTHORIZED=0`) — it exposes
@@ -238,7 +238,7 @@ npm run build       # tsup → dist/
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines. Releases are automated with
 semantic-release; the container image is published to
-`ghcr.io/wyre-technology/ncentral-mcp`.
+`ghcr.io/wyre-ai/ncentral-mcp`.
 
 ## License
 

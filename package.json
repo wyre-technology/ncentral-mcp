@@ -19,7 +19,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/wyre-technology/ncentral-mcp.git"
+    "url": "git+https://github.com/WYRE-AI/ncentral-mcp.git"
   },
   "keywords": [
     "mcp",
@@ -33,9 +33,9 @@
   "author": "Wyre Technology",
   "license": "Apache-2.0",
   "bugs": {
-    "url": "https://github.com/wyre-technology/ncentral-mcp/issues"
+    "url": "https://github.com/WYRE-AI/ncentral-mcp/issues"
   },
-  "homepage": "https://github.com/wyre-technology/ncentral-mcp#readme",
+  "homepage": "https://github.com/WYRE-AI/ncentral-mcp#readme",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.30.0",
     "@wyre-technology/node-ncentral": "^1.0.0"

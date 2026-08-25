@@ -77,7 +77,7 @@ are generated from commit messages by semantic-release.
 
 ## Reporting Issues
 
-Open an issue at <https://github.com/wyre-technology/ncentral-mcp/issues> with
+Open an issue at <https://github.com/WYRE-AI/ncentral-mcp/issues> with
 reproduction steps, expected vs. actual behavior, and your N-central version. Never
 include your JWT or registration tokens in issue reports.
 
